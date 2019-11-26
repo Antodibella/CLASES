@@ -2,30 +2,56 @@
 session_start();
 $error = "";
 
-if ($_POST) {
-    
-    $db = file_get_contents("usuario.json");
-    $usuario = json_decode($db, true);
-    $numero=0;
-    if(strlen($_POST["username"]) > 6 && strlen($_POST["password"]) > 6 ) {
-       $numero++;
-       $usuario[] = [ "nombre" => $_POST ["name"],
-                        "email" => $_POST ["email"],
-                        "username" => $_POST ["username"],
-                        "password" => $hash = password_hash($_POST["password"], PASSWORD_DEFAULT),
-                        "contador" =>  $numero++, 
-                     ];
-       $db = json_encode ($usuario);
 
-       file_put_contents("usuario.json", $db);
+// chequear si el usuario envio el form
+
+
+if ($_POST) {
+    //cargp los usuarios de la db
+    $db = file_get_contents("usuario.json");
+    $usuarios = json_decode($db, true);
+
+    // validar si el usuario lleno los campos usuario y pass
+    if(strlen($_POST["username"]) > 6 && strlen($_POST["password"]) > 6 ) {
+        
+        if (isset($_POST ["email"])){
+            $emails =array_column($usuarios, "email");
+            $index = array_search($_POST["email"], $emails);
+        
+            if($index === false){
+
+                if(count($usuarios)){
+                    $id = end($usuarios)['id'] +1;
+                } else {
+                    $id = 1;
+                }
+                $usuarios[] = [ 
+                    "id" => $id,
+                    "nombre" => $_POST ["name"],
+                    "email" => $_POST ["email"],
+                    "username" => $_POST ["username"],
+                    "password" => $hash = password_hash($_POST["password"], PASSWORD_DEFAULT)
+                              ];
+                $db = json_encode ($usuarios);
+         
+                file_put_contents("usuario.json", $db);
+            } else {
+                $error = "el email esta en uso"; 
+            }
+        } else {
+            $error = "debe ingresar email";
+        }
+     
+      
     }
     else {
         $error = "No completó el formulario";
-    }
+    } 
 
 }
 
-echo "<br>"; echo "<br>"; 
+
+
 
 
 ?>
@@ -38,6 +64,10 @@ echo "<br>"; echo "<br>";
 <body>
 
     <div id='fg_membersite'>
+     <?php if(strlen($error)>0){
+          echo "<p>$error</p>";
+        }
+          ?>
         <form id='register' action='' method='post'>
             <fieldset >
                 <legend>Registrate</legend>
