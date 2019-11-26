@@ -1,18 +1,19 @@
-<?PHP
-
+<?php
+session_start();
 $error = "";
 
 if ($_POST) {
     
     $db = file_get_contents("usuario.json");
     $usuario = json_decode($db, true);
-
+    $numero=0;
     if(strlen($_POST["username"]) > 6 && strlen($_POST["password"]) > 6 ) {
-
+       $numero++;
        $usuario[] = [ "nombre" => $_POST ["name"],
                         "email" => $_POST ["email"],
                         "username" => $_POST ["username"],
-                        "contraseña" => $hash = password_hash($_POST["password"], PASSWORD_DEFAULT), 
+                        "password" => $hash = password_hash($_POST["password"], PASSWORD_DEFAULT),
+                        "contador" =>  $numero++, 
                      ];
        $db = json_encode ($usuario);
 
